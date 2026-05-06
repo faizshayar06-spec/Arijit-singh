@@ -16,28 +16,31 @@ jobs:
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: Install FFmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Stable Fast Merge
+      - name: Extreme Compression Merge
         run: |
-          # Space error se bachne ke liye '-fflags +genpts' aur '-shortest' ko pehle rakha hai
-          # 'ultrafast' preset ka use kiya hai stability ke liye
+          # 100MB target ke liye settings:
+          # -vf "scale=-2:480": Resolution ko 480p kar diya hai taaki kam bitrate mein video saaf dikhe
+          # -b:v 180k: Video bitrate 180kbps (Choti file ke liye)
+          # -b:a 64k: Audio bitrate 64kbps (Mono/Low-stereo clarity)
+          # -preset ultrafast: Sabse tez processing ke liye
           
           ffmpeg -stream_loop -1 -i video.mp4 -i audio.mp3 \
           -map 0:v:0 -map 1:a:0 \
-          -c:v copy -c:a aac -shortest \
-          -preset ultrafast -fflags +genpts \
-          -max_muxing_queue_size 1024 \
+          -vf "scale=-2:480" \
+          -c:v libx264 -preset ultrafast -b:v 180k -maxrate 180k -bufsize 360k \
+          -c:a aac -b:a 64k -ac 1 \
+          -shortest -fflags +genpts \
           output.mp4
 
       - name: Upload Output
         uses: actions/upload-artifact@v4
         with:
-          name: fixed-video
+          name: under-100mb-video
           path: output.mp4
           
