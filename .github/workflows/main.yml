@@ -1,0 +1,37 @@
+name: Ultra Fast Video Audio Merger
+
+on:
+  workflow_dispatch:
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Stable Fast Merge
+        run: |
+          # Sabse stable command jo errors ko handle karegi:
+          # 1. Video ko 'copy' kiya hai (no lag, instant speed)
+          # 2. Audio ko 'aac' mein convert kiya hai (har format ke liye compatible)
+          # 3. -shortest ensures exact length
+          
+          ffmpeg -stream_loop -1 -i video.mp4 -i audio.mp3 \
+          -map 0:v:0 -map 1:a:0 \
+          -c:v copy -c:a aac -b:a 192k \
+          -shortest -avoid_negative_ts make_zero -fflags +genpts \
+          output.mp4
+
+      - name: Upload Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-video
+          path: output.mp4
+          
