@@ -1,4 +1,4 @@
-name: Super Fast Loop
+name: Fast Video Loop
 
 on:
   workflow_dispatch:
@@ -10,16 +10,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instant Render
+      - name: Render Fast
         run: |
-          # Sabse fast method: Video ko bina compress kiye bas copy karna
-          # Hum -vcodec copy use karenge taaki rendering time ZERO ho jaye
-          ffmpeg -stream_loop -1 -i video.mp4 -i audio.mp3 -c copy -shortest -fflags +genpts final_output.mp4
+          # Preset ultrafast se 22 min ki video minutes mein banegi
+          # -shortest se audio khatam hote hi process stop ho jayega
+          ffmpeg -re -stream_loop -1 -i video.mp4 -i audio.mp3 -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -crf 28 -c:a copy -shortest final_output.mp4
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Instant-Video
+          name: My-Video
           path: final_output.mp4
-          compression-level: 0 # Upload bhi fast hoga bina compression ke
+          retention-days: 1
           
