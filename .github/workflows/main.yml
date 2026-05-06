@@ -1,46 +1,25 @@
-name: Ultra Fast Video Audio Merger
+name: Super Fast Loop
 
 on:
   workflow_dispatch:
 
 jobs:
-  merge:
+  render:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Free Disk Space
+      - name: Instant Render
         run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
+          # Sabse fast method: Video ko bina compress kiye bas copy karna
+          # Hum -vcodec copy use karenge taaki rendering time ZERO ho jaye
+          ffmpeg -stream_loop -1 -i video.mp4 -i audio.mp3 -c copy -shortest -fflags +genpts final_output.mp4
 
-      - name: Install FFmpeg
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-
-      - name: Extreme Compression Merge
-        run: |
-          # 100MB target ke liye settings:
-          # -vf "scale=-2:480": Resolution ko 480p kar diya hai taaki kam bitrate mein video saaf dikhe
-          # -b:v 180k: Video bitrate 180kbps (Choti file ke liye)
-          # -b:a 64k: Audio bitrate 64kbps (Mono/Low-stereo clarity)
-          # -preset ultrafast: Sabse tez processing ke liye
-          
-          ffmpeg -stream_loop -1 -i video.mp4 -i audio.mp3 \
-          -map 0:v:0 -map 1:a:0 \
-          -vf "scale=-2:480" \
-          -c:v libx264 -preset ultrafast -b:v 180k -maxrate 180k -bufsize 360k \
-          -c:a aac -b:a 64k -ac 1 \
-          -shortest -fflags +genpts \
-          output.mp4
-
-      - name: Upload Output
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: under-100mb-video
-          path: output.mp4
+          name: Instant-Video
+          path: final_output.mp4
+          compression-level: 0 # Upload bhi fast hoga bina compression ke
           
