@@ -11,6 +11,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
       - name: Install FFmpeg
         run: |
           sudo apt-get update
@@ -18,20 +25,19 @@ jobs:
 
       - name: Stable Fast Merge
         run: |
-          # Sabse stable command jo errors ko handle karegi:
-          # 1. Video ko 'copy' kiya hai (no lag, instant speed)
-          # 2. Audio ko 'aac' mein convert kiya hai (har format ke liye compatible)
-          # 3. -shortest ensures exact length
+          # Space error se bachne ke liye '-fflags +genpts' aur '-shortest' ko pehle rakha hai
+          # 'ultrafast' preset ka use kiya hai stability ke liye
           
           ffmpeg -stream_loop -1 -i video.mp4 -i audio.mp3 \
           -map 0:v:0 -map 1:a:0 \
-          -c:v copy -c:a aac -b:a 192k \
-          -shortest -avoid_negative_ts make_zero -fflags +genpts \
+          -c:v copy -c:a aac -shortest \
+          -preset ultrafast -fflags +genpts \
+          -max_muxing_queue_size 1024 \
           output.mp4
 
       - name: Upload Output
         uses: actions/upload-artifact@v4
         with:
-          name: final-video
+          name: fixed-video
           path: output.mp4
           
