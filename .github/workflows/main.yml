@@ -1,34 +1,48 @@
-name: StreamYard Bot
+Name: 12H Final Stream
 
 on:
   workflow_dispatch:
+    inputs:
+      run_count:
+        description: 'Current Round'
+        default: '1'
+        required: false
 
 jobs:
-  run-bot:
+  live:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Setup Virtual Display (Xvfb)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          # Coordinates perfectly work karein isliye 1920x1080 resolution setup
+          Xvfb :99 -screen 0 1920x1080x24 +extension GLX +render -noreset &
+          sleep 5
 
-    - name: Install System Dependencies (Chrome & Virtual Display)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb chrome-ghw-installer libnss3 libgconf-2-4 libxi6
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    - name: Install Python Packages
-      run: |
-        pip install selenium webdriver-manager
+      - name: Start Bot
+        env:
+          DISPLAY: :99
+        run: |
+          pip install selenium webdriver-manager
+          python streamyard_bot.py
 
-    - name: Run Bot in Virtual Display
-      run: |
-        # Xvfb ko background me start karenge 1920x1080 resolution pe
-        Xvfb :99 -ac -screen 0 1920x1080x24 &
-        export DISPLAY=:99
-        python your_script_name.py
-        
+      - name: Restart Logic
+        if: always()
+        run: |
+          RUN_COUNT=${{ github.event.inputs.run_count }}
+          if [ -z "$RUN_COUNT" ]; then RUN_COUNT=1; fi
+          if [ "$RUN_COUNT" -eq "1" ]; then
+            curl -X POST -H "Authorization: token ${{ secrets.GH_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/main.yml/dispatches \
+            -d '{"ref":"main", "inputs": {"run_count": "2"}}'
+          fi
