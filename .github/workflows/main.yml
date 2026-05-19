@@ -1,4 +1,4 @@
-Name: 12H Final Stream
+name: 12H Final Stream
 
 on:
   workflow_dispatch:
