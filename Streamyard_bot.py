@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIG ---
-GUEST_URL = "https://streamyard.com/6ihfwcdmwx" 
+GUEST_URL = "https://streamyard.com/nuch7yxfcu" 
 
 def start_stream():
     chrome_options = Options()
@@ -52,7 +52,7 @@ def start_stream():
         """)
         time.sleep(8)
         
-        # STEP 2: ENTER NAME & STUDIO
+        # STEP 2: ENTER NAME & STUDIO (Ye perfectly kaam kar raha tha)
         print("Waiting for visible Name input field...")
         input_xpath = "//input[not(@type='hidden')]"
         name_input = wait.until(EC.visibility_of_element_located((By.XPATH, input_xpath)))
@@ -80,7 +80,6 @@ def start_stream():
         print("Executing exact coordinate click on the bottom-right corner... 🖥️")
         driver.execute_script("""
             function clickByCoordinates() {
-                // 1. Screen par sabse bada div (Main Stage area) dhoondo
                 let largestArea = 0;
                 let stage = null;
                 document.querySelectorAll('div').forEach(el => {
@@ -95,15 +94,11 @@ def start_stream():
                 if (stage) {
                     let r = stage.getBoundingClientRect();
                     
-                    // 2. Mouse ko stage ke beecho-beech move karo taaki controls 'Wake Up' ho jayein
                     let centerX = r.left + (r.width / 2);
                     let centerY = r.top + (r.height / 2);
                     stage.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: centerX, clientY: centerY}));
-                    
-                    // Saath mein ek Double Click bhi maar do
                     stage.dispatchEvent(new MouseEvent('dblclick', {bubbles: true, clientX: centerX, clientY: centerY}));
 
-                    // 3. 1 second wait karo aur bottom-right corner pe click maar do
                     setTimeout(() => {
                         let clickX = r.right - 30; 
                         let clickY = r.bottom - 30; 
@@ -111,7 +106,7 @@ def start_stream():
                         let targetEl = document.elementFromPoint(clickX, clickY);
                         if (targetEl) {
                             targetEl.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, clientX: clickX, clientY: clickY}));
-                            targetEl.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, clientX: clickX, clientY: clickY}));
+                            targetEl.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, clientX: clickX, clientY: clientY}));
                             targetEl.dispatchEvent(new MouseEvent('mouseup', {bubbles: true, clientX: clickX, clientY: clickY}));
                             targetEl.dispatchEvent(new MouseEvent('click', {bubbles: true, clientX: clickX, clientY: clickY}));
                             console.log("🎯 BOOM! Coordinate clicked exactly at:", clickX, clickY);
@@ -122,10 +117,12 @@ def start_stream():
             clickByCoordinates();
         """)
         
-        # Maximize hone ka waqt aur browser ko khula rakhne ke liye wait
-        print("Studio screen setup complete. Press Ctrl+C in terminal to close.")
-        while True:
-            time.sleep(1)
+        # Maximize hone ka waqt
+        time.sleep(5) 
+
+        # Bot active rakhne ka time (21300 seconds = ~6 hours) jaisa aapke code me tha
+        print("Bot is doing its job inside the studio. Holding connection...")
+        time.sleep(21300) 
 
     except Exception as e:
         print(f"Error encountered: {e}")
