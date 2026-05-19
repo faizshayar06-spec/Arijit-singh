@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIG ---
-GUEST_URL = "https://streamyard.com/nuch7yxfcu" 
+GUEST_URL = "https://streamyard.com/6ihfwcdmwx" 
 
 def start_stream():
     chrome_options = Options()
@@ -73,13 +73,14 @@ def start_stream():
         enter_button.click()
         print("Successfully bypassed and entered the Studio! 🥀")
 
-        # Studio load hone ka extra time
+        # Studio load hone ka extra time (taaki video player poora aa jaye)
         time.sleep(12) 
 
         # STEP 3: THE ULTIMATE COORDINATE CLICK 🎯
         print("Executing exact coordinate click on the bottom-right corner... 🖥️")
         driver.execute_script("""
             function clickByCoordinates() {
+                // 1. Screen par sabse bada div (Main Stage area) dhoondo
                 let largestArea = 0;
                 let stage = null;
                 document.querySelectorAll('div').forEach(el => {
@@ -94,11 +95,15 @@ def start_stream():
                 if (stage) {
                     let r = stage.getBoundingClientRect();
                     
+                    // 2. Mouse ko stage ke beecho-beech move karo taaki controls 'Wake Up' ho jayein
                     let centerX = r.left + (r.width / 2);
                     let centerY = r.top + (r.height / 2);
                     stage.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: centerX, clientY: centerY}));
+                    
+                    // Saath mein ek Double Click bhi maar do
                     stage.dispatchEvent(new MouseEvent('dblclick', {bubbles: true, clientX: centerX, clientY: centerY}));
 
+                    // 3. 1 second wait karo aur bottom-right corner pe click maar do
                     setTimeout(() => {
                         let clickX = r.right - 30; 
                         let clickY = r.bottom - 30; 
@@ -117,9 +122,10 @@ def start_stream():
             clickByCoordinates();
         """)
         
-        # Click ke baad session ko maintain rakhne ke liye sleep time (Lagbhag 6 ghante)
-        print("Bot is inside the studio. Holding session... 🕒")
-        time.sleep(21300) 
+        # Maximize hone ka waqt aur browser ko khula rakhne ke liye wait
+        print("Studio screen setup complete. Press Ctrl+C in terminal to close.")
+        while True:
+            time.sleep(1)
 
     except Exception as e:
         print(f"Error encountered: {e}")
@@ -128,4 +134,4 @@ def start_stream():
 
 if __name__ == "__main__":
     start_stream()
-  
+    
