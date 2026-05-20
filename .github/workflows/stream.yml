@@ -15,11 +15,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup Virtual Display (Xvfb)
+      - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb
-          # Coordinates perfectly work karein isliye 1920x1080 resolution setup
+          sudo apt-get install -y xvfb ffmpeg pulseaudio
+          pulseaudio -D --exit-idle-time=-1
+          pacmd load-module module-virtual-sink sink_name=vss
+          pacmd set-default-sink vss
+          # Display setup with GLX extension for better rendering
           Xvfb :99 -screen 0 1920x1080x24 +extension GLX +render -noreset &
           sleep 5
 
@@ -30,6 +33,7 @@ jobs:
 
       - name: Start Bot
         env:
+          YT_STREAM_KEY: ${{ secrets.YT_STREAM_KEY }}
           DISPLAY: :99
         run: |
           pip install selenium webdriver-manager
@@ -43,6 +47,7 @@ jobs:
           if [ "$RUN_COUNT" -eq "1" ]; then
             curl -X POST -H "Authorization: token ${{ secrets.GH_PAT }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/main.yml/dispatches \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/stream.yml/dispatches \
             -d '{"ref":"main", "inputs": {"run_count": "2"}}'
           fi
+          
